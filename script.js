@@ -31,6 +31,7 @@ axios.get(apiUrl)
 function buildTable(data) {
   var table = document.getElementById('tablebody')
   console.log(table);
+  table.innerHTML = "";
   for (var i = 0; i < data.length; i++) {
     var row = `<tr>
       <td>${data[i].id}</td>
@@ -100,6 +101,7 @@ function resetonclick() {
   document.getElementById('inputemail').value = ""
   document.getElementById('inputpassword').value = ""
   document.getElementById('inputlocation').value = ""
+  document.getElementById("idEdit").value = ""
 
 }
 
@@ -163,6 +165,7 @@ function table() {
     .then(response => {
 
       console.log('Response data:', response.data);
+      TableData = response?.data;
       buildTable(response?.data)
     })
     .catch(error => {
@@ -184,28 +187,79 @@ function save() {
   let check = Object.keys(data)?.filter((ele) => {
     if (data[ele] == "") {
       return ele
+      
     }
   });
   if (check.length != 0) {
     document.getElementById("error").innerHTML = "Please fill the required fields";
     return 0;
-  }else{
+  }
+  else {
     document.getElementById('inputname').value = ""
     document.getElementById('inputemail').value = ""
     document.getElementById('inputpassword').value = ""
     document.getElementById('inputlocation').value = ""
   }
 
-  axios.post(apiUrl, {
-    name: data.name,
-    email: data.email,
-    password: data.password,
-    location: data.location,
-  })
-    .then(Response => {
-      // console.log(':',Response.data);
-      table(Response.data);
+  let isID = document.getElementById("idEdit").value;
+  if (isID == "") {
+    axios.post(apiUrl, {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      location: data.location,
     })
+      .then(Response => {
+        //   let Toast = Swal.mixin({
+        //   toast: true,
+        //   position: "top-center",
+        //   showConfirmButton: false,
+        //   timer: 4000,
+        //   timerProgressBar: true,
+        //   didOpen: (toast) => {
+        //     toast.onmouseenter = Swal.stopTimer;
+        //     toast.onmouseleave = Swal.resumeTimer;
+        //   }
+        // });
+        // Toast.fire({
+        //   icon: "success",
+        //   title: "User Updated Successfully"
+          
+        // });
+
+        alert = Swal.fire({
+          title: "Good job!",
+          text: "Saved",
+          icon: "success"
+        });
+
+
+        // console.log(':',Response.data);
+        table(Response.data);
+      })
+  } else {
+    axios.put(`${apiUrl}/${isID}`, {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      location: data.location,
+    })
+      .then(Response => {
+        alert = Swal.fire({
+          title: "Good job!",
+          text: "Changes Saved",
+          icon: "success"
+        });
+        document.getElementById("idEdit").value = ""
+        // console.log(':',Response.data);
+        table(Response.data);
+      })
+  }
+  
+
+
+
+
 }
 
 
@@ -351,20 +405,14 @@ function edit(id) {
   // };
   var data = TableData.filter((ele) => ele.id == id)
 
-  console.log(data);
+  console.log(data, id);
   document.getElementById("inputname").value = data[0].name
   document.getElementById("inputemail").value = data[0].email
   document.getElementById("inputpassword").value = data[0].password
   document.getElementById("inputlocation").value = data[0].location
+  document.getElementById("idEdit").value = data[0]?.id;
 
 
-  axios.put(`${apiUrl}/${id}`)
-    .then(response => {
-      table('Data updated successfully', response.data);
-    })
-    .catch(error => {
-      console.error('Error updating data', error);
-    });
 
   // // Using PATCH to partially update the resource
   // axios.patch(`${apiUrl}/resourceId`, updatedData)
@@ -410,6 +458,8 @@ function remove(id) {
       console.error('Error deleting resource:', error);
     });
 }
+
+
 
 
 
